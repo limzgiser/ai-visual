@@ -1,0 +1,29 @@
+{
+  "assets": {
+    "version": "1.0.1",
+    "author": "limingzhi"
+  },
+
+  "unit": "mm",
+
+  "root": {
+    "title": "roof 主钢架图",
+    "data": [
+      {
+        "title": "立柱",
+        "type": 11,
+
+        
+        "data": [
+          {
+            "widh": 120,
+            "coordinates": [
+              { "x": 0, "y": 0 },
+              { "x": 0, "y": 0 }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
