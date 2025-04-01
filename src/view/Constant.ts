@@ -1,6 +1,7 @@
 enum CHAT_TYPE {
   ASK,
-  ANSWER
+  ANSWER,
+  ANSWER_GRAPHIC
 }
 
 export { CHAT_TYPE }
