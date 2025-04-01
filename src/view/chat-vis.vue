@@ -188,6 +188,7 @@ const save = (item: any) => {
 .left {
   width: 55%;
   border: 1px solid #f7f7f7;
+  overflow: auto;
 
 }
 
