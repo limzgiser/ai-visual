@@ -25,7 +25,12 @@
       </div>
       <div class="msg-input">
         <el-input v-model="input" style="width: 100%" type="textarea" placeholder=" 给DeepSeek发消息" :rows="2" />
-        <el-button class="send" :icon="Message" @click="onhanderSend" :loading="loading" />
+        <el-button class="send" :icon="Message" @click="onhanderSend" :loading="loading">
+          确定
+        </el-button>
+        <el-button class="send" :icon="Message" @click="reset" :disabled="loading">
+          新对话
+        </el-button>
       </div>
 
     </div>
@@ -35,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { marked } from 'marked'
-import { HumanMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { ChatDeepSeek } from "@langchain/deepseek";
 
 import {
@@ -45,7 +50,7 @@ import {
 } from '@element-plus/icons-vue'
 import { CHAT_TYPE } from "./Constant";
 import { ElMessage } from "element-plus";
-import { MockAIContent } from "./mock";
+
 
 
 const htmlMatch = (originalString: string) => {
@@ -64,9 +69,7 @@ const htmlMatch = (originalString: string) => {
 
 }
 
-
 const saved = ref<any>([])
-
 let chatContentList = ref<Array<any>>([])
 
 
@@ -77,26 +80,10 @@ const llm = new ChatDeepSeek({
   apiKey: 'sk-ffaa3fd19c194f1f86df34150e038209'
 
 });
-const input = ref<string>('给我下一个echart的demo，要求返回完整的html网页,echarts图的宽度设置为100% ,高度固定360px。')
 
-onMounted(async () => {
+const input = ref<string>()
 
-  nextTick(() => {
-
-    chatContentList.value = [
-      {
-        type: CHAT_TYPE.ANSWER,
-        content: MockAIContent,
-        isAI: true,
-      },
-      {
-        type: CHAT_TYPE.ANSWER_GRAPHIC,
-        content: htmlMatch(MockAIContent),
-        isAI: true,
-      }
-    ]
-  })
-});
+onMounted(async () => { });
 
 
 const renderMarkdown = (content: string) => {
@@ -110,30 +97,39 @@ const renderMarkdown = (content: string) => {
 const onhanderSend = async () => {
 
   loading.value = true
+
   chatContentList.value.push({
     type: CHAT_TYPE.ASK,
     content: input.value
   })
 
+  let asklist = chatContentList.value.filter(ii => [CHAT_TYPE.ASK, CHAT_TYPE.ANSWER].includes(ii.type))
+
+  if (!asklist || !asklist.length) return
+
+  let params: any = asklist
+    .map(ii => {
+      if (ii.type == CHAT_TYPE.ASK) {
+        return new HumanMessage(ii.content)
+      } else {
+        return new AIMessage(ii.content)
+      }
+    })
 
   try {
-    await llm.invoke([
-      new HumanMessage(input.value)
-    ]).then((aiMsg) => {
+    await llm.invoke(
+      params
+    ).then((aiMsg) => {
 
       // ai 回答文本
       chatContentList.value.push({
-        type: CHAT_TYPE.ASK,
+        type: CHAT_TYPE.ANSWER,
         content: aiMsg.content,
         isAI: true,
       })
 
-
       loading.value = false
-
       setTimeout(() => {
-
-
         const iframeUrl = htmlMatch(aiMsg.content as string)
         // ai 回答可视化图
         chatContentList.value.push({
@@ -141,8 +137,6 @@ const onhanderSend = async () => {
           content: iframeUrl,
           isAI: true,
         })
-
-
         htmlMatch(aiMsg.content as string)
       }, 0);
     });
@@ -155,6 +149,10 @@ const onhanderSend = async () => {
     ElMessage.error("出错了！")
   }
 
+  setTimeout(() => {
+    input.value = ''
+  }, 500);
+
 }
 const save = (item: any) => {
 
@@ -165,6 +163,9 @@ const save = (item: any) => {
   })
 }
 
+const reset = () => {
+  chatContentList.value.length = 0
+}
 </script>
 
 <style lang="scss" scoped>
