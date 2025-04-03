@@ -51,15 +51,15 @@ import { ChatAgent } from "./ChatAgent";
 
 const htmlMatch = (originalString: string) => {
 
-  // const htmlMatch = originalString.match(/```html\n([\s\S]*?)\n```/);
+  const htmlMatch = originalString.match(/```html\n([\s\S]*?)\n```/);
 
-  // if (!htmlMatch) return
+  if (!htmlMatch) return
 
-  // let htmlContent = htmlMatch[1]
-  //   .replace(/\\x3C/g, '<')
-  //   .replace(/\\n/g, '\n');
+  let htmlContent = htmlMatch[1]
+    .replace(/\\x3C/g, '<')
+    .replace(/\\n/g, '\n');
 
-  const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(originalString)}`;
+  const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
 
   return dataUrl
 
