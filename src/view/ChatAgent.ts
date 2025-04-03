@@ -58,7 +58,7 @@ class ChatAgent {
 
   constructor(config: MySQLVisualizerConfig) {
     this.llm = config.llm
-    this.queryApiUrl = config.queryApiUrl || 'http://localhost:8088/query'
+    this.queryApiUrl = config.queryApiUrl || 'http://192.168.155.204:8088/query'
     this.sessionId = config.sessionId || uuidv4()
     this.chatHistory = getChatHistory(this.sessionId)
     // Initialize annotations and graph
