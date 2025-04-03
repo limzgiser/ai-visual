@@ -47,40 +47,42 @@ import { CHAT_TYPE } from "./Constant";
 import { ElMessage } from "element-plus";
 import { MockAIContent } from "./mock";
 
+import { ChatAgent } from "./ChatAgent";
 
 const htmlMatch = (originalString: string) => {
 
-  const htmlMatch = originalString.match(/```html\n([\s\S]*?)\n```/);
+  // const htmlMatch = originalString.match(/```html\n([\s\S]*?)\n```/);
 
-  if (!htmlMatch) return
+  // if (!htmlMatch) return
 
-  let htmlContent = htmlMatch[1]
-    .replace(/\\x3C/g, '<')
-    .replace(/\\n/g, '\n');
+  // let htmlContent = htmlMatch[1]
+  //   .replace(/\\x3C/g, '<')
+  //   .replace(/\\n/g, '\n');
 
-  const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+  const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(originalString)}`;
 
   return dataUrl
 
 }
 
-
 const saved = ref<any>([])
-
 let chatContentList = ref<Array<any>>([])
-
-
+const input = ref<string>('每个地区有多少个项目？')
 let loading = ref(false)
+
 const llm = new ChatDeepSeek({
-  model: "deepseek-reasoner",
+  model: "deepseek-chat",
   temperature: 0,
   apiKey: 'sk-ffaa3fd19c194f1f86df34150e038209'
 
 });
-const input = ref<string>('给我下一个echart的demo，要求返回完整的html网页,echarts图的宽度设置为100% ,高度固定360px。')
+
+const chatAgent = new ChatAgent({
+  llm: llm
+});
+
 
 onMounted(async () => {
-
   nextTick(() => {
 
     chatContentList.value = [
@@ -89,11 +91,11 @@ onMounted(async () => {
         content: MockAIContent,
         isAI: true,
       },
-      {
-        type: CHAT_TYPE.ANSWER_GRAPHIC,
-        content: htmlMatch(MockAIContent),
-        isAI: true,
-      }
+      // {
+      //   type: CHAT_TYPE.ANSWER_GRAPHIC,
+      //   content: htmlMatch(MockAIContent),
+      //   isAI: true,
+      // }
     ]
   })
 });
@@ -117,16 +119,14 @@ const onhanderSend = async () => {
 
 
   try {
-    await llm.invoke([
-      new HumanMessage(input.value)
-    ]).then((aiMsg) => {
-
+    chatAgent.executePipeline( input.value).then((res) => {
+      console.log("res: ", res);
       // ai 回答文本
-      chatContentList.value.push({
-        type: CHAT_TYPE.ASK,
-        content: aiMsg.content,
-        isAI: true,
-      })
+      // chatContentList.value.push({
+      //   type: CHAT_TYPE.ASK,
+      //   content: res.html,
+      //   isAI: true,
+      // })
 
 
       loading.value = false
@@ -134,7 +134,7 @@ const onhanderSend = async () => {
       setTimeout(() => {
 
 
-        const iframeUrl = htmlMatch(aiMsg.content as string)
+        const iframeUrl = htmlMatch(res.html as string)
         // ai 回答可视化图
         chatContentList.value.push({
           type: CHAT_TYPE.ANSWER_GRAPHIC,
@@ -143,9 +143,39 @@ const onhanderSend = async () => {
         })
 
 
-        htmlMatch(aiMsg.content as string)
+        htmlMatch(res.html as string)
       }, 0);
     });
+
+    // await llm.invoke([
+    //   new HumanMessage(input.value)
+    // ]).then((aiMsg) => {
+
+    //   // ai 回答文本
+    //   chatContentList.value.push({
+    //     type: CHAT_TYPE.ASK,
+    //     content: aiMsg.content,
+    //     isAI: true,
+    //   })
+
+
+    //   loading.value = false
+
+    //   setTimeout(() => {
+
+
+    //     const iframeUrl = htmlMatch(aiMsg.content as string)
+    //     // ai 回答可视化图
+    //     chatContentList.value.push({
+    //       type: CHAT_TYPE.ANSWER_GRAPHIC,
+    //       content: iframeUrl,
+    //       isAI: true,
+    //     })
+
+
+    //     htmlMatch(aiMsg.content as string)
+    //   }, 0);
+    // });
 
 
   } catch (error) {
