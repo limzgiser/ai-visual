@@ -1,5 +1,6 @@
 <template>
-  <div class="chat-container" v-loading="loading">
+  <div class="chat-container" v-loading="loading" element-loading-text="数据加载中.."
+    element-loading-background="rgba(122, 122, 122, 0.5)">
 
     <div class="left">
 
