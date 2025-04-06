@@ -3,7 +3,7 @@
     element-loading-background="rgba(122, 122, 122, 0.5)">
 
     <div class="left">
-
+      <span class="report-title">AI分析报告</span>
       <template v-if="saved && saved.length">
         <div class="left-item" v-for="(msg) of saved" :key="msg.id">
 
@@ -135,7 +135,18 @@ const htmlMatch = (originalString: string) => {
 
 
 onMounted(async () => {
-
+  chatContentList.value = [
+    {
+      type: CHAT_TYPE.ANSWER,
+      content: MockAIContent,
+      isAI: true,
+    },
+    {
+      type: CHAT_TYPE.ANSWER_GRAPHIC,
+      content: htmlMatch(MockAIContent),
+      isAI: true,
+    }
+  ]
 
 });
 
@@ -365,5 +376,17 @@ const remove = (id: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.report-title {
+  display: flex;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 5px;
+  border-left: 8px solid #409eff;
+  padding-left: 8px;
+  height: 18px;
+  align-items: center;
+
 }
 </style>
