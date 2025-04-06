@@ -135,18 +135,7 @@ const htmlMatch = (originalString: string) => {
 
 
 onMounted(async () => {
-  chatContentList.value = [
-    {
-      type: CHAT_TYPE.ANSWER,
-      content: MockAIContent,
-      isAI: true,
-    },
-    {
-      type: CHAT_TYPE.ANSWER_GRAPHIC,
-      content: htmlMatch(MockAIContent),
-      isAI: true,
-    }
-  ]
+ 
 
 });
 
