@@ -88,6 +88,7 @@ import { ElMessage, FormRules } from "element-plus";
 import { MockAIContent } from "./mock";
 import { generateRandomId } from "../Tools/Tools";
 
+import { ChatAgent } from "./ChatAgent";
 
 const dialogVisible = ref(false)
 
@@ -133,10 +134,39 @@ const htmlMatch = (originalString: string) => {
 
 }
 
+const saved = ref<any>([])
+let chatContentList = ref<Array<any>>([])
+const input = ref<string>('每个地区有多少个项目？')
+let loading = ref(false)
+
+const llm = new ChatDeepSeek({
+  model: "deepseek-chat",
+  temperature: 0,
+  apiKey: 'sk-ffaa3fd19c194f1f86df34150e038209'
+
+});
+
+const chatAgent = new ChatAgent({
+  llm: llm
+});
+
 
 onMounted(async () => {
- 
+  nextTick(() => {
 
+    chatContentList.value = [
+      {
+        type: CHAT_TYPE.ANSWER,
+        content: MockAIContent,
+        isAI: true,
+      },
+      // {
+      //   type: CHAT_TYPE.ANSWER_GRAPHIC,
+      //   content: htmlMatch(MockAIContent),
+      //   isAI: true,
+      // }
+    ]
+  })
 });
 
 
@@ -169,27 +199,60 @@ const onhanderSend = async () => {
   })
 
   try {
-    await llm.invoke(params).then((aiMsg) => {
-
-      chatContentList.value.push({
-        type: CHAT_TYPE.ANSWER,
-        content: aiMsg.content,
-        isAI: true,
-      })
+    chatAgent.executePipeline( input.value).then((res) => {
+      console.log("res: ", res);
+      // ai 回答文本
+      // chatContentList.value.push({
+      //   type: CHAT_TYPE.ASK,
+      //   content: res.html,
+      //   isAI: true,
+      // })
 
       loading.value = false
 
       setTimeout(() => {
-        const iframeUrl = htmlMatch(aiMsg.content as string)
+
+
+        const iframeUrl = htmlMatch(res.html as string)
+        // ai 回答可视化图
         chatContentList.value.push({
           type: CHAT_TYPE.ANSWER_GRAPHIC,
           content: iframeUrl,
           isAI: true,
         })
-
-        htmlMatch(aiMsg.content as string)
+        htmlMatch(res.html as string)
       }, 0);
     });
+
+    // await llm.invoke([
+    //   new HumanMessage(input.value)
+    // ]).then((aiMsg) => {
+
+    //   // ai 回答文本
+    //   chatContentList.value.push({
+    //     type: CHAT_TYPE.ASK,
+    //     content: aiMsg.content,
+    //     isAI: true,
+    //   })
+
+
+    //   loading.value = false
+
+    //   setTimeout(() => {
+
+
+    //     const iframeUrl = htmlMatch(aiMsg.content as string)
+    //     // ai 回答可视化图
+    //     chatContentList.value.push({
+    //       type: CHAT_TYPE.ANSWER_GRAPHIC,
+    //       content: iframeUrl,
+    //       isAI: true,
+    //     })
+
+
+    //     htmlMatch(aiMsg.content as string)
+    //   }, 0);
+    // });
 
 
   } catch (error) {
